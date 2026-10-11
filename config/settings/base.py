@@ -1,58 +1,31 @@
-"""Fusion-Integrated — base settings.
-
-Every value comes from the environment. This service holds NO user table:
-identity, RBAC and directory data all come from Fusion_System_Administrator
-over HTTP — see fusion_auth/.
-"""
-import os
 from pathlib import Path
+import environ
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
-
-def _load_env_file(path):
-    """Fill in from .env whatever the environment has not already set.
-
-    Local development only in practice: production passes real variables
-    through systemd, and setdefault means those always win. Without this,
-    `cp .env.example .env` does nothing and every entry point depends on one
-    shell's exports.
-    """
-    try:
-        lines = path.read_text().splitlines()
-    except OSError:
-        return
-    for line in lines:
-        line = line.strip()
-        if not line or line.startswith("#") or "=" not in line:
-            continue
-        name, _, value = line.partition("=")
-        os.environ.setdefault(name.strip(), value.strip().strip('"').strip("'"))
+env = environ.Env()
+environ.Env.read_env(BASE_DIR / ".env")
 
 
-_load_env_file(BASE_DIR / ".env")
-
-
-def env(name, default=None):
-    v = os.environ.get(name)
-    return default if v is None or v.strip() == "" else v.strip()
-
-
-def env_bool(name, default=False):
-    raw = env(name)
-    return default if raw is None else raw.lower() in ("1", "true", "yes", "on")
-
-
-def env_int(name, default=None):
-    raw = env(name)
-    try:
-        return int(raw) if raw is not None else default
-    except ValueError:
+def env_bool(var_name: str, default: bool = False) -> bool:
+    """env.bool crashes on empty string: treat empty as absent."""
+    raw = env(var_name, default=None)
+    if raw is None or raw == "":
         return default
+    return env.bool(var_name, default=default)
 
 
-def env_list(name, default=None):
-    raw = env(name)
+def env_int(var_name: str, default: int = 0) -> int:
+    """env.int crashes on empty string: treat empty as absent."""
+    raw = env(var_name, default=None)
+    if raw is None or raw == "":
+        return default
+    return env.int(var_name, default=default)
+
+
+def env_list(var_name: str, default: list[str] | None = None) -> list[str]:
+    """Parse comma-separated strings safely, stripping whitespace."""
+    raw = env(var_name, default=None)
     if raw is None:
         return list(default or [])
     return [x.strip() for x in raw.split(",") if x.strip()]
@@ -90,6 +63,7 @@ PLATFORM_MODULES = [
 # See docs/03-platform/module-authoring-guide.md to add one.
 DOMAIN_MODULES = [
     "modules.placement",
+    "modules.elm",
 ]
 
 INSTALLED_APPS = (DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -132,6 +106,9 @@ DATABASES = {
     }
 }
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+#: How long a cached directory row may be trusted before it is refetched.
+DIRECTORY_MAX_AGE_SECONDS = env_int("DIRECTORY_MAX_AGE_SECONDS", 6 * 60 * 60)
 
 # The IAM. This service is a client of it and caches nothing it cannot rebuild.
 IAM_BASE_URL = env("IAM_BASE_URL", "http://127.0.0.1:8001")
@@ -245,10 +222,12 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 
 SECURE_CONTENT_TYPE_NOSNIFF = True
 SECURE_REFERRER_POLICY = "strict-origin-when-cross-origin"
-X_FRAME_OPTIONS = "DENY"
+# SAMEORIGIN, not DENY: Fusion-client embeds these screens, same origin in prod.
+X_FRAME_OPTIONS = "SAMEORIGIN"
 
 # W003: CSRF is enforced by core/api/csrf.py. See the note above MIDDLEWARE.
-SILENCED_SYSTEM_CHECKS = ["security.W003"]
+# W019: the portal frames these screens deliberately, and only same origin.
+SILENCED_SYSTEM_CHECKS = ["security.W003", "security.W019"]
 
 # Without this, nothing is configured and every INFO audit line is discarded.
 LOGGING = {
