@@ -137,10 +137,16 @@ All test suites and system checks were executed locally and passed with zero err
 
 ---
 
-## 5. Deliverable PR Package Draft
+## 5. Deliverable PR Package
+
+- **Pull Request Status:** **OPEN & SUBMITTED**
+- **PR Number:** [#293](https://github.com/FusionIIIT/Fusion-Integrated/pull/293)
+- **PR URL:** `https://github.com/FusionIIIT/Fusion-Integrated/pull/293`
+- **Target Repository & Branch:** `FusionIIIT/Fusion-Integrated:main`
+- **Source Repository & Branch:** `Maritreye/Fusion-Integrated:phase2-elm-improvement`
 
 ### Pull Request Title
-`feat(elm): comprehensive Phase 2 enhancements, holiday-aware balance ledger, and approval lifecycle`
+`feat(elm): complete Phase 2 leave management workflows, balance ledger, and approval lifecycle`
 
 ### Pull Request Description
 ```markdown
