@@ -9,4 +9,7 @@ See [`modules/elm/PHASE2_LOOKUP.md`](file:///c:/Users/LENOVO/Downloads/Fusion-In
 - **Test Results:** 42 passed in 0.81s (100% pass)
 - **Django Check:** System check identified no issues (0 silenced)
 - **Migration Check:** `makemigrations --dry-run` -> No changes detected
+- **Pull Request:** [#293](https://github.com/FusionIIIT/Fusion-Integrated/pull/293) (`https://github.com/FusionIIIT/Fusion-Integrated/pull/293`)
+- **PR Title:** `feat(elm): complete Phase 2 leave management workflows, balance ledger, and approval lifecycle`
+- **Target Repository & Branch:** `FusionIIIT/Fusion-Integrated:main`
 - **Frontend Components:** Complete with Mantine 7 and TanStack React Query 5
